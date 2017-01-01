@@ -107,7 +107,10 @@ namespace FSO.Client.Regulators
                     }
                     break;
                 case "LoggedIn":
-                    GameFacade.Controller.ShowPersonSelection();
+                    if (GameFacade.Controller != null)
+                    {
+                        GameFacade.Controller.ShowPersonSelection();
+                    }
                     break;
             }
         }
