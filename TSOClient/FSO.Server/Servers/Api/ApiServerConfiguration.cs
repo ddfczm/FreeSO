@@ -27,6 +27,11 @@ namespace FSO.Server.Servers.Api
         /// How long an auth ticket is valid for
         /// </summary>
         public int AuthTicketDuration = 300;
+
+        /// <summary>
+        /// If non-null, the user must provide this key to register an account.
+        /// </summary>
+        public string registration_key = null;
     }
 
     public enum ApiServerControllers

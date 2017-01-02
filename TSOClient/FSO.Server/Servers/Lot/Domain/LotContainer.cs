@@ -103,6 +103,7 @@ namespace FSO.Server.Servers.Lot.Domain
                     location = Context.Id,
                     category = LotCategory.money,
                     name = "{job:"+jobType+":"+jobLevel+"}",
+                    admit_mode = 4
                 };
                 LotAdj = new List<DbLot>();
                 LotRoommates = new List<DbRoommate>();
@@ -428,8 +429,7 @@ namespace FSO.Server.Servers.Lot.Domain
                     OffsetY=offset.Y,
                     TargetSize=targetSize
                 });
-                vm.Update();
-                vm.Update();
+                vm.Tick();
 
                 isNew = true;
                 SaveRing();
@@ -543,7 +543,9 @@ namespace FSO.Server.Servers.Lot.Domain
                     lastTick++;
                     //sometimes avatars can be killed immediately after their kill timer starts (this frame will run the leave lot interaction)
                     //this works around that possibility. 
-                    var preTickAvatars = Lot.Context.ObjectQueries.Avatars.Select(x => (VMAvatar)x).ToList();
+                    var preTickAvatars = Lot.Context.ObjectQueries.AvatarsByPersist.Values.Select(x => x).ToList();
+                    var noRoomies = !(preTickAvatars.Any(x => ((VMTSOAvatarState)x.TSOState).Permissions > VMTSOAvatarPermissions.Visitor) && LotPersist.admit_mode < 4);
+
                     try
                     {
                         Lot.Tick();
@@ -554,6 +556,16 @@ namespace FSO.Server.Servers.Lot.Domain
                         LOG.Error("VM ERROR: " + e.StackTrace);
                         Host.Shutdown();
                         return;
+                    }
+
+                    if (noRoomies)
+                    {
+                        //no roommates are here, so all visitors must be kicked out.
+                        foreach (var avatar in preTickAvatars)
+                        {
+                            if (avatar.KillTimeout == -1) avatar.UserLeaveLot();
+                            VMDriver.DropAvatar(avatar);
+                        }
                     }
 
                     if (noRemainingUsers)
@@ -569,7 +581,7 @@ namespace FSO.Server.Servers.Lot.Domain
                             }
                         }
                     }
-                    else if (TimeToShutdown != -1)
+                    else if (!noRoomies && TimeToShutdown != -1)
                         TimeToShutdown = -1;
 
                     if (--LotSaveTicker <= 0)
@@ -708,18 +720,23 @@ namespace FSO.Server.Servers.Lot.Domain
                 }
 
                 var visitorType = DbLotVisitorType.visitor;
-                switch (state.Permissions)
+                if (myRoomieLots.Count > 0)
                 {
-                    case VMTSOAvatarPermissions.Owner:
-                    case VMTSOAvatarPermissions.Admin:
-                        visitorType = DbLotVisitorType.owner;
-                        break;
-                    case VMTSOAvatarPermissions.BuildBuyRoommate:
-                    case VMTSOAvatarPermissions.Roommate:
-                        visitorType = DbLotVisitorType.roommate;
-                        break;
+                    var roomieStatus = myRoomieLots.FindAll(x => x.lot_id == Context.DbId).FirstOrDefault();
+                    if (roomieStatus != null && roomieStatus.is_pending == 0)
+                    {
+                        switch (roomieStatus.permissions_level)
+                        {
+                            case 0:
+                            case 1:
+                                visitorType = DbLotVisitorType.roommate;
+                                break;
+                            case 2:
+                                visitorType = DbLotVisitorType.owner;
+                                break;
+                        }
+                    }
                 }
-
                 Host.RecordStartVisit(session, visitorType);
 
                 VMDriver.ConnectClient(client);

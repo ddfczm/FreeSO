@@ -184,6 +184,8 @@ namespace FSO.Client.UI.Panels
             NeighborhoodNameButton.Visible = false;
 
             Size = BackgroundExpandedImage.Size.ToVector2();
+
+            SendToFront(ExpandButton, ContractButton);
         }
 
         private void ChangeName(UIElement button)
