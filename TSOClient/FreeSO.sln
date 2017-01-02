@@ -86,6 +86,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSO.Server.Watchdog", "FSO.Server.Updater\FSO.Server.Watchdog.csproj", "{BEDCDF02-3349-4E64-9BFD-38C499303822}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSO.Patcher", "FSO.Patcher\FSO.Patcher.csproj", "{4E43CE64-343F-4C53-A055-BBF0F4986A16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSO.Benchmark", "FSO.Benchmark\FSO.Benchmark.csproj", "{95B4B051-FAAD-4504-9B5C-1167F11061FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

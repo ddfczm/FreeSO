@@ -150,6 +150,7 @@
     <Compile Include="Domain\ServerDomainModule.cs" />
     <Compile Include="Domain\Shards.cs" />
     <Compile Include="Domain\ServerTop100Domain.cs" />
+    <Compile Include="Framework\Aries\AriesStatistics.cs" />
     <Compile Include="Servers\Api\Controllers\Admin\AdminTasksController.cs" />
     <Compile Include="Servers\City\CityServerModule.cs" />
     <Compile Include="Servers\Tasks\Domain\PruneDatabaseTask.cs" />

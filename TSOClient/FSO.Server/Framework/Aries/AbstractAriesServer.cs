@@ -29,6 +29,7 @@ using FSO.Server.Protocol.CitySelector;
 using FSO.Common.Utils;
 using FSO.Server.Protocol.Gluon.Model;
 using FSO.Server.Database.DA.Hosts;
+using Ninject.Parameters;
 
 namespace FSO.Server.Framework.Aries
 {
@@ -39,6 +40,9 @@ namespace FSO.Server.Framework.Aries
 
         private AbstractAriesServerConfig Config;
         protected IDAFactory DAFactory;
+
+        protected StatisticsAggregator StatisticsAggregator;
+        protected AriesStatistics Statistics;
 
         private IoAcceptor Acceptor;
         private IServerDebugger Debugger;
@@ -60,6 +64,10 @@ namespace FSO.Server.Framework.Aries
             {
                 throw new Exception("Server configuration missing required fields");
             }
+
+            StatisticsAggregator = new StatisticsAggregator();
+            Kernel.Bind<StatisticsAggregator>().ToConstant(StatisticsAggregator);
+            Statistics = Kernel.Get<AriesStatistics>(new ConstructorArgument("callSign", config.Call_Sign));
 
             Kernel.Bind<IAriesPacketRouter>().ToConstant(_Router);
             Kernel.Bind<ISessions>().ToConstant(this._Sessions);
@@ -126,6 +134,8 @@ namespace FSO.Server.Framework.Aries
                 plainAcceptor.Handler = this;
                 plainAcceptor.Bind(IPEndPointUtils.CreateIPEndPoint(Config.Binding.Replace("100", "101")));
                 LOG.Info("Listening on " + plainAcceptor.LocalEndPoint + " in the plain");
+
+                StatisticsAggregator.StartDigest();
             }
             catch(Exception ex)
             {
@@ -198,6 +208,8 @@ namespace FSO.Server.Framework.Aries
 
         public void MessageReceived(IoSession session, object message)
         {
+            Statistics.MessageReceived();
+
             var ariesSession = session.GetAttribute<IAriesSession>("s");
 
             if (!ariesSession.IsAuthenticated)
@@ -219,6 +231,7 @@ namespace FSO.Server.Framework.Aries
 
         public void SessionOpened(IoSession session)
         {
+            Statistics.SessionOpened();
         }
 
         public void SessionClosed(IoSession session)
@@ -238,6 +251,8 @@ namespace FSO.Server.Framework.Aries
                     LOG.Error(ex);
                 }
             }
+
+            Statistics.SessionClosed();
         }
 
         public void SessionIdle(IoSession session, IdleStatus status)
@@ -257,6 +272,7 @@ namespace FSO.Server.Framework.Aries
 
         public void MessageSent(IoSession session, object message)
         {
+            Statistics.MessageSent();
         }
 
         public void InputClosed(IoSession session)
@@ -275,6 +291,7 @@ namespace FSO.Server.Framework.Aries
             }
 
             MarkHostDown();
+            StatisticsAggregator.StopDigest();
         }
 
         public void MarkHostDown()

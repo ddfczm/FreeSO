@@ -206,6 +206,8 @@
     <Compile Include="Utils\Promise.cs" />
     <Compile Include="Utils\PPXDepthEngine.cs" />
     <Compile Include="Utils\StateMachine.cs" />
+    <Compile Include="Utils\StatisticsAggregator.cs" />
+    <Compile Include="Utils\StatisticsCollector.cs" />
     <Compile Include="Utils\TextureGenerator.cs" />
     <Compile Include="Utils\TextureUtils.cs" />
     <Compile Include="Utils\TimedReferenceCache.cs" />

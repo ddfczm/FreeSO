@@ -5,6 +5,7 @@ using FSO.Server.Database.DA;
 using FSO.Server.DataService;
 using FSO.Server.Debug;
 using FSO.Server.Domain;
+using FSO.Server.Framework.Aries;
 using FSO.Server.Servers;
 using FSO.Server.Servers.Api;
 using FSO.Server.Servers.City;
@@ -110,7 +111,8 @@ namespace FSO.Server
                 var childKernel = new ChildKernel(
                     Kernel,
                     new ShardDataServiceModule(Config.SimNFS),
-                    new CityServerModule()
+                    new CityServerModule(),
+                    new AriesStatisticsModule()
                 );
 
                 var city = childKernel.Get<CityServer>(new ConstructorArgument("config", cityServer));
@@ -123,7 +125,8 @@ namespace FSO.Server
                 if (lotServer.SimNFS == null) lotServer.SimNFS = Config.SimNFS;
                 var childKernel = new ChildKernel(
                     Kernel,
-                    new LotServerModule()
+                    new LotServerModule(),
+                    new AriesStatisticsModule()
                 );
 
                 Servers.Add(
@@ -136,7 +139,8 @@ namespace FSO.Server
             {
                 var childKernel = new ChildKernel(
                     Kernel,
-                    new TaskEngineModule()
+                    new TaskEngineModule(),
+                    new AriesStatisticsModule()
                 );
 
                 childKernel.Bind<TaskServerConfiguration>().ToConstant(Config.Services.Tasks);
